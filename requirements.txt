@@ -16,3 +16,5 @@ finnhub-python
 google-auth
 xgboost
 finta
+pymongo
+python-dotenv

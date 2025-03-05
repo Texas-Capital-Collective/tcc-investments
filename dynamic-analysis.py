@@ -15,6 +15,9 @@ from scipy import stats
 from datetime import datetime, timedelta
 from google.oauth2 import service_account
 from finta import TA
+from pymongo import MongoClient
+from dotenv import load_dotenv
+import os
 
 # Existing credentials and initialization code remains the same
 # credentials_path = "D:/Coding/IntroML/coe379-ml-project-81b7de97df4a.json"
@@ -62,6 +65,18 @@ def pull_news_from_gcs(company, date):
     else:
         print(f"No blob found for {company} on {date} at path {blob_path}")
         return []
+    
+def pull_news_from_mongo(company, date):
+    load_dotenv()
+    client = MongoClient(os.getenv("MONGO_URI"))
+    db = client["stocks"]
+    collection = db["news"]
+    document = collection.find_one({"ticker": company.lower(), "date": date})
+    if document:
+        return document["news"]
+    else:
+        print(f"No document found for {company} on {date}")
+        return []
 
 
 def analyze_sentiment(news_data):
@@ -102,7 +117,10 @@ def get_sentiment_scores(company, date):
         print(f"Using cached sentiment for {company} on {date}")
         return cache[company][date]
 
-    news_data = pull_news_from_gcs(company, date)
+    # pulling from gcloud
+    # news_data = pull_news_from_gcs(company, date)
+    # pulling from mongo
+    news_data = pull_news_from_mongo(company, date)
     if not news_data:
         return None  # No news data available
 

@@ -6,6 +6,9 @@ from google.cloud import storage
 from time import sleep
 from secret import FINHUB_KEY
 from google.oauth2 import service_account
+from pymongo import MongoClient
+from dotenv import load_dotenv
+import os
 
 # Initialize Finnhub client
 finnhub_client = finnhub.Client(api_key=FINHUB_KEY)
@@ -57,6 +60,19 @@ def save_to_gcs(company, data, file_date):
     # Upload JSON data to the bucket
     blob.upload_from_string(json_data, content_type="application/json")
     print(f"Uploaded {file_name} to gs://{BUCKET_NAME}/{COMPANIES[company]}/")
+
+def save_to_mongo(company, data, file_date):
+    load_dotenv()
+    client = MongoClient(os.getenv("MONGO_URI"))
+    db = client["stocks"]
+    collection = db["news"]
+    entry = {
+                    "ticker": company,
+                    "date": file_date,
+                    "news": data
+                }
+    insert_result = collection.insert_one(entry)
+    print("Inserted Document ID: ", insert_result)
 
 
 # def main():
@@ -130,7 +146,10 @@ def main():
 
                 if news_data:
                     print(f"Saving {len(news_data)} articles for {company} to GCS...")
-                    save_to_gcs(company, news_data, start_date_str)
+                    # saving to gcloud
+                    # save_to_gcs(company, news_data, start_date_str)
+                    # saving to mongo
+                    save_to_mongo(company, news_data, start_date_str)
                 else:
                     print(f"No news articles found for {company} on {start_date_str}.")
 
