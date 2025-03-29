@@ -9,6 +9,7 @@ from google.oauth2 import service_account
 from pymongo import MongoClient
 from dotenv import load_dotenv
 import os
+import requests
 
 # Initialize Finnhub client
 finnhub_client = finnhub.Client(api_key=FINHUB_KEY)
@@ -43,6 +44,16 @@ def get_finnhub_news(company, start_date, end_date):
     ]
 
     return filtered_news
+
+def get_alpha_news(company, start_date, end_date):
+    """Fetch news articles for a specific company from Alpha Vantage"""
+    # TODO: Implement fetching news articles from Alpha Vantage
+    url = 'https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers=AAPL&apikey=IXAHBNDC1EB314QW'
+    r = requests.get(url)
+    data = r.json()
+
+    print(data)
+    pass
 
 
 def save_to_gcs(company, data, file_date):
